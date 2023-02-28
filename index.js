@@ -91,6 +91,7 @@ function generateBinaryTreeMaze(){
         }
     }
     const t1 = performance.now();
+    console.log(`Generated ${maze.width} by ${maze.height} maze using binary tree algorithm`)
     console.log(`Generation took ${t1 - t0} milliseconds.`);
 }
 
