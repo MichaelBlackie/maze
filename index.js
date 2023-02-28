@@ -1,7 +1,7 @@
 const canvas = document.getElementById("grid");
 const ctx = canvas.getContext("2d");
 
-let current;
+const sliderUnit = document.getElementById("sizeSlider");
 
 class Maze {
     constructor(width, height, size){
@@ -12,45 +12,91 @@ class Maze {
     }
 
     setup(){
+        this.grid = []
         for(let x = 0; x < this.width; x++){
             let column = [];
             for(let y = 0; y < this.height; y++){
-                column.push(new Cell({x: x, y: y}, true, this.size, {cols: this.width, rows: this.height}))
-                column[y].draw()
+                column.push(new Cell({x: x, y: y}, this.size, {cols: this.width, rows: this.height}))
             }
             this.grid.push(column)
         }
-    }
-
-    clearSquare(x, y){
-        this.grid[x][y].filled = false;
-        this.grid[x][y].draw()
+        let endx = this.width
+        let endy = this.height
+        this.grid[0][0].fill("green")
+        this.grid[this.width - 1][this.height - 1].fill("red")
     }
 }
 
 class Cell {
-    constructor({x,y}, filled, parentSize, grid){
+    constructor({x,y}, parentSize, grid){
         this.x = x;
         this.y = y;
         this.rows = grid.rows
         this.cols = grid.cols
-        this.filled = filled;
         this.parentSize = parentSize;
+        this.xCoord = this.x * (this.parentSize / this.cols)
+        this.yCoord = this.y * (this.parentSize / this.rows)
     }
 
-    draw(){
-        if (this.filled){
-            ctx.fillStyle = "black"
-            ctx.fillRect(this.parentSize/this.cols * this.x ,this.parentSize/ this.rows * this.y , this.parentSize/this.cols, this.parentSize/ this.rows)
-        } else {
-            ctx.fillStyle = "white"
-            ctx.fillRect(this.parentSize/this.cols * this.x ,this.parentSize/ this.rows * this.y , this.parentSize/this.cols, this.parentSize/ this.rows)
+    rightWall(){
+        ctx.moveTo(this.xCoord + this.parentSize/this.cols, this.yCoord)
+        ctx.lineTo(this.xCoord + this.parentSize/this.cols, this.yCoord + this.parentSize/this.rows)
+        ctx.stroke()
+    }
+
+    bottomWall(){
+        ctx.moveTo(this.xCoord + this.parentSize/this.cols, this.yCoord + this.parentSize/this.rows)
+        ctx.lineTo(this.xCoord, this.yCoord + this.parentSize/this.rows)
+        ctx.stroke()
+    }
+
+    leftWall(){
+        ctx.moveTo(this.xCoord, this.yCoord + this.parentSize/this.rows)
+        ctx.lineTo(this.xCoord, this.yCoord)
+        ctx.stroke()
+    }
+
+    topWall(){
+        ctx.moveTo(this.xCoord, this.yCoord)
+        ctx.lineTo(this.xCoord + this.parentSize/this.cols, this.yCoord)
+        ctx.stroke()
+    }
+
+    fill(color){
+        ctx.fillStyle = color
+        ctx.fillRect(this.xCoord, this.yCoord, this.parentSize/this.cols, this.parentSize/this.rows)
+    }
+}
+
+function generateBinaryTreeMaze(){
+    maze = new Maze(parseInt(sliderUnit.value), parseInt(sliderUnit.value), 500);
+    canvas.width = maze.size;
+    canvas.height = maze.size;
+    maze.setup()
+    let start = maze.grid[maze.width - 1][maze.height - 1]
+    for (let y = start.y; y >= 0; y--){
+        console.log("y")
+        for (let x = start.x; x >= 0; x--){
+            console.log("x")
+            if (x > 0 && y > 0){
+                if (Math.random() > 0.5){
+                    carve("north", maze.grid[x][y])
+                } else {
+                    carve("west", maze.grid[x][y])
+                }
+            } else if (x == 0){
+                carve("north", maze.grid[x][y])
+            } else {
+                carve("west", maze.grid[x][y])
+            }
         }
     }
 }
 
-maze = new Maze(10, 10, 500);
-canvas.width = maze.size;
-canvas.height = maze.size;
-maze.setup()
-maze.clearSquare(1,3)
+function carve(direction, cell){
+    if (direction === "north"){
+        cell.leftWall()
+    } else if (direction === "west"){
+        cell.topWall()
+    }
+}
