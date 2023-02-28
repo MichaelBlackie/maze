@@ -36,6 +36,13 @@ class Cell {
         this.parentSize = parentSize;
         this.xCoord = this.x * (this.parentSize / this.cols)
         this.yCoord = this.y * (this.parentSize / this.rows)
+        this.visited = false;
+        this.walls = {
+            left: true,
+            right: true,
+            bottom: true,
+            top: true
+        }
     }
 
     rightWall(){
@@ -68,6 +75,8 @@ class Cell {
     }
 }
 
+
+// Code for binary tree generator
 function generateBinaryTreeMaze(){
     const t0 = performance.now();
     maze = new Maze(parseInt(sliderUnit.value), parseInt(sliderUnit.value), 500);
@@ -93,12 +102,80 @@ function generateBinaryTreeMaze(){
     const t1 = performance.now();
     console.log(`Generated ${maze.width} by ${maze.height} maze using binary tree algorithm`)
     console.log(`Generation took ${t1 - t0} milliseconds.`);
+    displayWalls()
 }
 
 function carve(direction, cell){
     if (direction === "north"){
-        cell.leftWall()
+        cell.walls.right = false;
+        cell.walls.top = false;
+        cell.walls.bottom = false;
     } else if (direction === "west"){
-        cell.topWall()
+        cell.walls.right = false;
+        cell.walls.left = false;
+        cell.walls.bottom = false;
     }
 }
+
+
+// code for hunt and kill generator
+
+function moveUp(x,y){
+    console.log(maze.grid[x][y])
+    maze.grid[x][y].walls.top = false;
+    maze.grid[x][y - 1].walls.bottom = false;
+}
+
+function moveRight(x,y){
+    console.log(maze.grid[x][y])
+    maze.grid[x][y].walls.right = false;
+    maze.grid[x + 1][y].walls.left = false;
+}
+
+function moveDown(x,y){
+    console.log(maze.grid[x][y])
+    maze.grid[x][y].walls.bottom = false;
+    maze.grid[x][y + 1].walls.top = false;
+}
+
+function moveLeft(x,y){
+    console.log(maze.grid[x][y])
+    maze.grid[x][y].walls.left = false;
+    maze.grid[x - 1][y].walls.right = false;
+}
+
+function walk(){
+}
+
+
+// general functions
+
+function displayWalls() {
+    console.log("displaying")
+    for (let x = 0; x < maze.width; x++){
+        for (let y = 0; y < maze.height; y++){
+            let cell = maze.grid[x][y];
+            if (cell.walls.right){
+                cell.rightWall();
+            } if (cell.walls.bottom){
+                cell.bottomWall();
+            } if (cell.walls.left){
+                cell.leftWall();
+            } if (cell.walls.top){
+                cell.topWall();
+            }
+        }
+    }
+}
+
+function start(){
+    maze = new Maze(parseInt(sliderUnit.value), parseInt(sliderUnit.value), 500);
+    canvas.width = maze.size;
+    canvas.height = maze.size;
+    maze.setup()
+}
+
+start()
+
+displayWalls()
+
