@@ -69,15 +69,14 @@ class Cell {
 }
 
 function generateBinaryTreeMaze(){
+    const t0 = performance.now();
     maze = new Maze(parseInt(sliderUnit.value), parseInt(sliderUnit.value), 500);
     canvas.width = maze.size;
     canvas.height = maze.size;
     maze.setup()
     let start = maze.grid[maze.width - 1][maze.height - 1]
     for (let y = start.y; y >= 0; y--){
-        console.log("y")
         for (let x = start.x; x >= 0; x--){
-            console.log("x")
             if (x > 0 && y > 0){
                 if (Math.random() > 0.5){
                     carve("north", maze.grid[x][y])
@@ -91,6 +90,8 @@ function generateBinaryTreeMaze(){
             }
         }
     }
+    const t1 = performance.now();
+    console.log(`Generation took ${t1 - t0} milliseconds.`);
 }
 
 function carve(direction, cell){
