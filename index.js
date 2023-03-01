@@ -144,7 +144,52 @@ function moveLeft(x,y){
     maze.grid[x - 1][y].walls.right = false;
 }
 
-function walk(){
+function walk(start){
+    start.visited = true
+    let affectedCell = null;
+    let options = []
+
+    try{
+        let topNotVisited = (maze.grid[start.x][start.y - 1].visited != true)
+        let bottomNotVisited = (maze.grid[start.x][start.y + 1].visited != true)
+        let rightNotVisited = (maze.grid[start.x + 1][start.y].visited != true)
+        let leftNotVisited = (maze.grid[start.x - 1][start.y].visited != true)
+
+        if (topNotVisited){
+            options.push({cell: maze.grid[start.x][start.y - 1], direction: "up"})
+        } if (bottomNotVisited){
+            options.push({cell: maze.grid[start.x][start.y + 1], direction: "down"})
+        } if (rightNotVisited){
+            options.push({cell: maze.grid[start.x + 1][start.y], direction: "right"})
+        } if (leftNotVisited){
+            options.push({cell: maze.grid[start.x - 1][start.y], direction: "left"})
+        } else if (!leftNotVisited && !rightNotVisited && !bottomNotVisited && !topNotVisited){
+            return "Finished"
+        }
+    } catch {
+        return "Finished"
+    }
+    
+
+    let randomChoice = options[Math.floor(Math.random() * options.length)]
+    switch (randomChoice.direction){
+        case "up":
+            moveUp(start.x, start.y)
+            walk(randomChoice.cell)
+            break
+        case "down":
+            moveDown(start.x, start.y)
+            walk(randomChoice.cell)
+            break
+        case "right":
+            moveRight(start.x, start.y)
+            walk(randomChoice.cell)
+            break
+        case "left":
+            moveLeft(start.x, start.y)
+            walk(randomChoice.cell)
+            break
+    }
 }
 
 
@@ -176,6 +221,6 @@ function start(){
 }
 
 start()
-
+console.log(walk(maze.grid[5][5]))
 displayWalls()
 
