@@ -121,25 +121,21 @@ function carve(direction, cell){
 // code for hunt and kill generator
 
 function moveUp(x,y){
-    console.log(maze.grid[x][y])
     maze.grid[x][y].walls.top = false;
     maze.grid[x][y - 1].walls.bottom = false;
 }
 
 function moveRight(x,y){
-    console.log(maze.grid[x][y])
     maze.grid[x][y].walls.right = false;
     maze.grid[x + 1][y].walls.left = false;
 }
 
 function moveDown(x,y){
-    console.log(maze.grid[x][y])
     maze.grid[x][y].walls.bottom = false;
     maze.grid[x][y + 1].walls.top = false;
 }
 
 function moveLeft(x,y){
-    console.log(maze.grid[x][y])
     maze.grid[x][y].walls.left = false;
     maze.grid[x - 1][y].walls.right = false;
 }
@@ -149,25 +145,35 @@ function walk(start){
     let affectedCell = null;
     let options = []
 
-    try{
-        let topNotVisited = (maze.grid[start.x][start.y - 1].visited != true)
-        let bottomNotVisited = (maze.grid[start.x][start.y + 1].visited != true)
-        let rightNotVisited = (maze.grid[start.x + 1][start.y].visited != true)
-        let leftNotVisited = (maze.grid[start.x - 1][start.y].visited != true)
+    let topNotVisited = false
+    let bottomNotVisited = false
+    let rightNotVisited = false
+    let leftNotVisited = false
 
-        if (topNotVisited){
-            options.push({cell: maze.grid[start.x][start.y - 1], direction: "up"})
-        } if (bottomNotVisited){
-            options.push({cell: maze.grid[start.x][start.y + 1], direction: "down"})
-        } if (rightNotVisited){
-            options.push({cell: maze.grid[start.x + 1][start.y], direction: "right"})
-        } if (leftNotVisited){
-            options.push({cell: maze.grid[start.x - 1][start.y], direction: "left"})
-        } else if (!leftNotVisited && !rightNotVisited && !bottomNotVisited && !topNotVisited){
-            return "Finished"
-        }
-    } catch {
-        return "Finished"
+    if (start.y > 0) {topNotVisited = (maze.grid[start.x][start.y - 1].visited != true)}
+    else {topNotVisited = false}
+
+    if (start.y < maze.height -1) {bottomNotVisited = (maze.grid[start.x][start.y + 1].visited != true)}
+    else {bottomNotVisited = false}
+
+    if (start.x < maze.width -1) {rightNotVisited = (maze.grid[start.x + 1][start.y].visited != true)}
+    else {rightNotVisited = false}
+
+    if (start.x > 0){leftNotVisited = (maze.grid[start.x - 1][start.y].visited != true)}
+    else {leftNotVisited = false}
+
+    
+    if (topNotVisited){
+        options.push({cell: maze.grid[start.x][start.y - 1], direction: "up"})
+    } if (bottomNotVisited){
+        options.push({cell: maze.grid[start.x][start.y + 1], direction: "down"})
+    } if (rightNotVisited){
+        options.push({cell: maze.grid[start.x + 1][start.y], direction: "right"})
+    } if (leftNotVisited){
+        options.push({cell: maze.grid[start.x - 1][start.y], direction: "left"})
+    } else if (!leftNotVisited && !rightNotVisited && !bottomNotVisited && !topNotVisited){
+        hunt()
+        return
     }
     
 
@@ -192,11 +198,78 @@ function walk(start){
     }
 }
 
+function hunt(){
+    console.log("hunting")
+    for (let x = 0; x < maze.width; x++){
+        for (let y = 0; y < maze.height; y++){
+            if (maze.grid[x][y].visited === false){
+                console.log("hunted")
+                maze.grid[x][y].visited = true
+                visited = checkAdjacent(maze.grid[x][y])
+
+                let randomDirection = visited[Math.floor(Math.random() * visited.length)]
+
+                switch (randomDirection){
+                    case "top":
+                        moveUp(start.x, start.y)
+                        walk(maze.grid[x][y])
+                        console.log(maze.grid[x][y])
+                        break
+                    case "bottom":
+                        moveDown(start.x, start.y)
+                        walk(maze.grid[x][y])
+                        console.log(maze.grid[x][y])
+                        break
+                    case "right":
+                        moveRight(start.x, start.y)
+                        walk(maze.grid[x][y])
+                        console.log(maze.grid[x][y])
+                        break
+                    case "left":
+                        moveLeft(start.x, start.y)
+                        walk(maze.grid[x][y])
+                        console.log(maze.grid[x][y])
+                        break
+                }
+            }   
+        }
+    }
+}
+
+function checkAdjacent(start){
+    visited = []
+
+    if (start.y > 0 ){
+        if (maze.grid[start.x][start.y - 1].visited){
+            visited.push("top")
+        }
+    }
+
+    if (start.y < maze.height -1) {
+        if(maze.grid[start.x][start.y + 1].visited){
+            visited.push("bottom")
+        }
+    }
+
+    if (start.x < maze.width -1) {
+        if(maze.grid[start.x + 1][start.y].visited){
+            visited.push("right")
+        }
+    }
+
+    if (start.x > 0) {
+        if(maze.grid[start.x - 1][start.y].visited){
+            visited.push("left")
+        }
+    }
+
+    return visited
+}
+
 
 // general functions
 
 function displayWalls() {
-    console.log("displaying")
     for (let x = 0; x < maze.width; x++){
         for (let y = 0; y < maze.height; y++){
             let cell = maze.grid[x][y];
@@ -221,6 +294,6 @@ function start(){
 }
 
 start()
-console.log(walk(maze.grid[5][5]))
+walk(maze.grid[0][0])
 displayWalls()
 
