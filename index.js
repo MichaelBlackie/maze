@@ -304,4 +304,5 @@ function generateHuntAndKillMaze(){
     displayWalls()
 }
 
+console.log("test")
 
