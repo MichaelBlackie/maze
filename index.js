@@ -1,6 +1,9 @@
 const canvas = document.getElementById("grid");
 const ctx = canvas.getContext("2d");
 
+canvas.width = 500;
+canvas.height = 500;
+
 const sliderUnit = document.getElementById("sizeSlider");
 
 class Maze {
@@ -78,7 +81,7 @@ class Cell {
 
 // Code for binary tree generator
 function generateBinaryTreeMaze(){
-    const t0 = performance.now();
+    let t0 = performance.now();
     maze = new Maze(parseInt(sliderUnit.value), parseInt(sliderUnit.value), 500);
     canvas.width = maze.size;
     canvas.height = maze.size;
@@ -99,7 +102,7 @@ function generateBinaryTreeMaze(){
             }
         }
     }
-    const t1 = performance.now();
+    let t1 = performance.now();
     console.log(`Generated ${maze.width} by ${maze.height} maze using binary tree algorithm`)
     console.log(`Generation took ${t1 - t0} milliseconds.`);
     displayWalls()
@@ -196,39 +199,34 @@ function walk(start){
             walk(randomChoice.cell)
             break
     }
+
+    options = []
 }
 
 function hunt(){
-    console.log("hunting")
     for (let x = 0; x < maze.width; x++){
         for (let y = 0; y < maze.height; y++){
             if (maze.grid[x][y].visited === false){
-                console.log("hunted")
-                maze.grid[x][y].visited = true
                 visited = checkAdjacent(maze.grid[x][y])
 
                 let randomDirection = visited[Math.floor(Math.random() * visited.length)]
 
                 switch (randomDirection){
                     case "top":
-                        moveUp(start.x, start.y)
+                        moveUp(maze.grid[x][y].x, maze.grid[x][y].y)
                         walk(maze.grid[x][y])
-                        console.log(maze.grid[x][y])
                         break
                     case "bottom":
-                        moveDown(start.x, start.y)
+                        moveDown(maze.grid[x][y].x, maze.grid[x][y].y)
                         walk(maze.grid[x][y])
-                        console.log(maze.grid[x][y])
                         break
                     case "right":
-                        moveRight(start.x, start.y)
+                        moveRight(maze.grid[x][y].x, maze.grid[x][y].y)
                         walk(maze.grid[x][y])
-                        console.log(maze.grid[x][y])
                         break
                     case "left":
-                        moveLeft(start.x, start.y)
+                        moveLeft(maze.grid[x][y].x, maze.grid[x][y].y)
                         walk(maze.grid[x][y])
-                        console.log(maze.grid[x][y])
                         break
                 }
             }   
@@ -270,30 +268,40 @@ function checkAdjacent(start){
 // general functions
 
 function displayWalls() {
+    let walls = 0
+    console.log("displaying...")
     for (let x = 0; x < maze.width; x++){
         for (let y = 0; y < maze.height; y++){
             let cell = maze.grid[x][y];
             if (cell.walls.right){
                 cell.rightWall();
+                walls ++;
             } if (cell.walls.bottom){
                 cell.bottomWall();
+                walls ++;
             } if (cell.walls.left){
                 cell.leftWall();
+                walls ++;
             } if (cell.walls.top){
                 cell.topWall();
+                walls ++;
             }
         }
     }
+    console.log(walls)
 }
 
-function start(){
+function generateHuntAndKillMaze(){
+    let huntT0 = performance.now();
     maze = new Maze(parseInt(sliderUnit.value), parseInt(sliderUnit.value), 500);
     canvas.width = maze.size;
     canvas.height = maze.size;
     maze.setup()
+    walk(maze.grid[0][0])
+    let huntT1 = performance.now();
+    console.log(`Generated ${maze.width} by ${maze.height} maze using hunt and kill algorithm`)
+    console.log(`Generation took ${huntT1 - huntT0} milliseconds.`);
+    displayWalls()
 }
 
-start()
-walk(maze.grid[0][0])
-displayWalls()
 
