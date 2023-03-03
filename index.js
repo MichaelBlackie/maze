@@ -6,6 +6,8 @@ canvas.height = 500;
 
 const sliderUnit = document.getElementById("sizeSlider");
 
+let goal;
+
 class Maze {
     constructor(width, height, size){
         this.width = width;
@@ -26,7 +28,14 @@ class Maze {
         let endx = this.width
         let endy = this.height
         this.grid[0][0].fill("green")
-        this.grid[this.width - 1][this.height - 1].fill("red")
+
+        if (this.width % 2 === 0){
+            this.grid[this.width - 2][this.height - 2].fill("red")
+            goal = {x: this.width - 2, y: this.width - 2}
+        } else {
+            this.grid[this.width - 1][this.height - 1].fill("red")
+            goal = {x: this.width - 1, y: this.width - 1}
+        }
     }
 }
 
@@ -46,6 +55,7 @@ class Cell {
             bottom: true,
             top: true
         }
+        this.pathed = false;
     }
 
     rightWall(){
@@ -124,23 +134,19 @@ function carve(direction, cell){
 // code for hunt and kill generator
 
 function moveUp(x,y){
-    maze.grid[x][y].walls.top = false;
-    maze.grid[x][y - 1].walls.bottom = false;
+    maze.grid[x][y - 1].visited = true;
 }
 
 function moveRight(x,y){
-    maze.grid[x][y].walls.right = false;
-    maze.grid[x + 1][y].walls.left = false;
+    maze.grid[x + 1][y].visited = true;
 }
 
 function moveDown(x,y){
-    maze.grid[x][y].walls.bottom = false;
-    maze.grid[x][y + 1].walls.top = false;
+    maze.grid[x][y + 1].visited = true;
 }
 
 function moveLeft(x,y){
-    maze.grid[x][y].walls.left = false;
-    maze.grid[x - 1][y].walls.right = false;
+    maze.grid[x - 1][y].visited = true;
 }
 
 function walk(start){
@@ -153,27 +159,27 @@ function walk(start){
     let rightNotVisited = false
     let leftNotVisited = false
 
-    if (start.y > 0) {topNotVisited = (maze.grid[start.x][start.y - 1].visited != true)}
+    if (start.y > 1) {topNotVisited = (maze.grid[start.x][start.y - 2].visited != true)}
     else {topNotVisited = false}
 
-    if (start.y < maze.height -1) {bottomNotVisited = (maze.grid[start.x][start.y + 1].visited != true)}
+    if (start.y < maze.height -2) {bottomNotVisited = (maze.grid[start.x][start.y + 2].visited != true)}
     else {bottomNotVisited = false}
 
-    if (start.x < maze.width -1) {rightNotVisited = (maze.grid[start.x + 1][start.y].visited != true)}
+    if (start.x < maze.width -2) {rightNotVisited = (maze.grid[start.x + 2][start.y].visited != true)}
     else {rightNotVisited = false}
 
-    if (start.x > 0){leftNotVisited = (maze.grid[start.x - 1][start.y].visited != true)}
+    if (start.x > 1){leftNotVisited = (maze.grid[start.x - 2][start.y].visited != true)}
     else {leftNotVisited = false}
 
     
     if (topNotVisited){
-        options.push({cell: maze.grid[start.x][start.y - 1], direction: "up"})
+        options.push({cell: maze.grid[start.x][start.y - 2], direction: "up"})
     } if (bottomNotVisited){
-        options.push({cell: maze.grid[start.x][start.y + 1], direction: "down"})
+        options.push({cell: maze.grid[start.x][start.y + 2], direction: "down"})
     } if (rightNotVisited){
-        options.push({cell: maze.grid[start.x + 1][start.y], direction: "right"})
+        options.push({cell: maze.grid[start.x + 2][start.y], direction: "right"})
     } if (leftNotVisited){
-        options.push({cell: maze.grid[start.x - 1][start.y], direction: "left"})
+        options.push({cell: maze.grid[start.x - 2][start.y], direction: "left"})
     } else if (!leftNotVisited && !rightNotVisited && !bottomNotVisited && !topNotVisited){
         hunt()
         return
@@ -204,8 +210,8 @@ function walk(start){
 }
 
 function hunt(){
-    for (let x = 0; x < maze.width; x++){
-        for (let y = 0; y < maze.height; y++){
+    for (let x = 0; x < maze.width; x += 2){
+        for (let y = 0; y < maze.height; y += 2){
             if (maze.grid[x][y].visited === false){
                 visited = checkAdjacent(maze.grid[x][y])
 
@@ -237,58 +243,31 @@ function hunt(){
 function checkAdjacent(start){
     visited = []
 
-    if (start.y > 0 ){
-        if (maze.grid[start.x][start.y - 1].visited){
+    if (start.y > 1 ){
+        if (maze.grid[start.x][start.y - 2].visited){
             visited.push("top")
         }
     }
 
-    if (start.y < maze.height -1) {
-        if(maze.grid[start.x][start.y + 1].visited){
+    if (start.y < maze.height -2) {
+        if(maze.grid[start.x][start.y + 2].visited){
             visited.push("bottom")
         }
     }
 
-    if (start.x < maze.width -1) {
-        if(maze.grid[start.x + 1][start.y].visited){
+    if (start.x < maze.width -2) {
+        if(maze.grid[start.x + 2][start.y].visited){
             visited.push("right")
         }
     }
 
-    if (start.x > 0) {
-        if(maze.grid[start.x - 1][start.y].visited){
+    if (start.x > 1) {
+        if(maze.grid[start.x - 2][start.y].visited){
             visited.push("left")
         }
     }
 
     return visited
-}
-
-
-// general functions
-
-function displayWalls() {
-    let walls = 0
-    console.log("displaying...")
-    for (let x = 0; x < maze.width; x++){
-        for (let y = 0; y < maze.height; y++){
-            let cell = maze.grid[x][y];
-            if (cell.walls.right){
-                cell.rightWall();
-                walls ++;
-            } if (cell.walls.bottom){
-                cell.bottomWall();
-                walls ++;
-            } if (cell.walls.left){
-                cell.leftWall();
-                walls ++;
-            } if (cell.walls.top){
-                cell.topWall();
-                walls ++;
-            }
-        }
-    }
-    console.log(walls)
 }
 
 function generateHuntAndKillMaze(){
@@ -304,5 +283,93 @@ function generateHuntAndKillMaze(){
     displayWalls()
 }
 
-console.log("test")
+
+// Depth first search path finding
+
+function depthFirstSearch(){
+    let pathT0 = performance.now();
+    let curNode;
+    let stack = [maze.grid[0][0]]
+    let path = []
+
+    while (true){
+        curNode = stack[stack.length - 1];
+        path.push(curNode)
+        curNode.pathed = true
+
+        if (curNode.x === goal.x && curNode.y === goal.y){
+            console.log("found path")
+            stack.forEach((cell) => {
+                setTimeout(() => {cell.fill("rgba(255, 182, 65, 1)")}, 200)
+            })
+            break;
+        }
+
+        var unpathed = 0;
+        var adjacent = returnAdjacent(curNode)
+
+        adjacent.forEach((cell) => {
+            if (!cell.pathed) {
+                stack.push(cell);
+                setTimeout(() => {cell.fill("rgba(255, 182, 65, 0.41)")}, 200)
+                unpathed += 1;
+            }
+        });
+
+        if (unpathed === 0){
+            stack.pop()
+        }
+
+    }
+
+    let pathT1 = performance.now();
+    console.log(`Found path using the Depth First Search algorithm`)
+    console.log(`Pathfinding took ${pathT1 - pathT0} milliseconds.`);
+}
+
+function returnAdjacent(start){
+    let found = []
+    if (start.y > 0 ){
+        if (maze.grid[start.x][start.y - 1].visited){
+            found.push(maze.grid[start.x][start.y - 1])
+        }
+    }
+
+    if (start.y < maze.height -1) {
+        if(maze.grid[start.x][start.y + 1].visited){
+            found.push(maze.grid[start.x][start.y + 1])
+        }
+    }
+
+    if (start.x < maze.width -1 ) {
+        if(maze.grid[start.x + 1][start.y].visited){
+            found.push(maze.grid[start.x + 1][start.y])
+        }
+    }
+
+    if (start.x > 0) {
+        if(maze.grid[start.x - 1][start.y].visited){
+            found.push(maze.grid[start.x - 1][start.y])
+        }
+    }
+
+    return found
+}
+
+
+// general functions
+
+function displayWalls() {
+    let walls = 0
+    console.log("displaying...")
+    for (let x = 0; x < maze.width; x++){
+        for (let y = 0; y < maze.height; y++){
+            let cell = maze.grid[x][y];
+            if (!cell.visited){
+                cell.fill("black")
+            }
+        }
+    }
+    console.log(walls)
+}
 
