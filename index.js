@@ -5,6 +5,7 @@ canvas.width = 500;
 canvas.height = 500;
 
 const sliderUnit = document.getElementById("sizeSlider");
+const timeSlider = document.getElementById("timeSlider");
 
 let goal;
 
@@ -287,6 +288,8 @@ function generateHuntAndKillMaze(){
 // Depth first search path finding
 
 function depthFirstSearch(){
+    let delay = 200;
+    console.log(delay)
     let pathT0 = performance.now();
     let curNode;
     let stack = [maze.grid[0][0]]
@@ -300,7 +303,7 @@ function depthFirstSearch(){
         if (curNode.x === goal.x && curNode.y === goal.y){
             console.log("found path")
             stack.forEach((cell) => {
-                setTimeout(() => {cell.fill("rgba(255, 182, 65, 1)")}, 200)
+                setTimeout(() => {cell.fill("rgba(255, 182, 65, 1)")}, delay)
             })
             break;
         }
@@ -311,7 +314,7 @@ function depthFirstSearch(){
         adjacent.forEach((cell) => {
             if (!cell.pathed) {
                 stack.push(cell);
-                setTimeout(() => {cell.fill("rgba(255, 182, 65, 0.41)")}, 200)
+                setTimeout(() => {cell.fill("rgba(255, 182, 65, 0.41)")}, delay)
                 unpathed += 1;
             }
         });
